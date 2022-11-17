@@ -21,7 +21,7 @@
                     <div class="js-state">
                         <label for="state" class="t-label-h">State*</label>
                         <select id="state" name="state" data-name="State" class="w-select">
-                          <option value=null>-- Please select a state --</option>
+                          <option value=0>-- Please select a state --</option>
                         </select>
                     </div>
                     <label for="zip" class="t-label-h">Zip Code*</label>
@@ -36,6 +36,7 @@
                     />
                     <input
                       type="submit"
+                      id="submit-button"
                       value="Confirm State"
                       data-wait="Please wait..."
                       class="button-full-orange button-full-orange-esa js-confirm-state w-button"
@@ -52,7 +53,21 @@
     </div>
 
     <script>
-      const zipRanges = {}
+      const getSubmitButton = () => {
+        return document.getElementById("submit-button");
+      }
+
+      const getStateSelect = () => {
+        return document.getElementById("state");
+      }
+
+      const getZipField = () => {
+        return document.getElementById("zip");
+      }
+
+      const zipRanges = {
+        0: [{start: 1, end: 0}]
+      }
 
       const addStateRanges = (state, ranges) => {
         if (!rangesForState[state]) {
@@ -82,8 +97,6 @@
           data.states.forEach(state => {
             const {id, name} = state;
             let option = createOption(id, name)
-            console.log('option created: ', option)
-            console.log('stateSelect: ', stateSelect)
             stateSelect.appendChild(option)
           })
         }).catch(err => console.log(err));
@@ -96,19 +109,45 @@
         })
       }
 
-      const stateSelect = document.getElementById('state')
+      const stateSelect = getStateSelect()
       stateSelect.addEventListener('change', event => {
-        console.log('Selection changed: ', event.target.value)
         let stateId = event.target.value;
 
         if(stateId && !zipRanges[stateId]) {
           fetchZipRanges(stateId).then(data => {
             const ranges = data.ranges;
             zipRanges[stateId] = ranges;
+            updateSubmitButton();
           })
 
-          console.log('zipRanges: ', zipRanges)
+          updateSubmitButton(); // Disable before response comes back
         }
+      })
+
+      const validateZipInRange = () => {
+        const zip = getZipField().value
+        const state = getStateSelect().value
+
+        if (!state) return false;
+
+        let inRange =  zipRanges[state].reduce((valid, range) => {
+          return valid || (range.start <= zip && zip <= range.end)
+        }, false)
+        return inRange;
+      }
+
+      const updateSubmitButton = () => {
+        if(validateZipInRange()) {
+          getSubmitButton().disabled = false
+        } else {
+          getSubmitButton().disabled = true
+        }
+      }
+
+      // Disable submit button 
+      const zipField = getZipField();
+      zipField.addEventListener('input', event => {
+        updateSubmitButton();
       })
 
       populateStates();
