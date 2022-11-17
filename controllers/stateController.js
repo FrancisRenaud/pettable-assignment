@@ -30,8 +30,6 @@ exports.zipRanges = (req, res, next) => {
 }
 
 exports.confirm_state = (req, res, next) => {
-  console.log("req.body ", req.body)
-  console.log("req.params ", req.params)
   const {state, zip} = req.body
   
   if (!state) {

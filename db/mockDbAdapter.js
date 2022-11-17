@@ -5,19 +5,21 @@ const zipRanges = {
 }
 
 const isZipValid = (stateId, zip) => {
-  if (!zipRanges[stateId]) {
-    return false;
-  }
+  
 
   return new Promise((resolve, reject) => {
-    let res =  zipRanges[stateId].reduce((valid, range) => {
-      return valid || (range.start <= zip && zip <= range.end)
-    }, false)
-
-    if(res) {
-      resolve(true)
+    if (!zipRanges[stateId]) {
+      reject(false);
     } else {
-      reject(false)
+      let res =  zipRanges[stateId].reduce((valid, range) => {
+        return valid || (range.start <= zip && zip <= range.end)
+      }, false)
+  
+      if(res) {
+        resolve(true)
+      } else {
+        reject(false)
+      }
     }
   })
 }
